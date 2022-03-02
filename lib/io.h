@@ -9,6 +9,8 @@ extern "C" {
 #endif
 
 enum IOError {
+	IO_BUF_TOO_SMALL = -3,
+	IO_BUF_FULL = -2,
 	IO_BUF_EMPTY = -1,
 	IO_SUCCESS = 0,
 };
@@ -18,6 +20,13 @@ typedef struct {
 	const char *ptr;
 	size_t remaining;
 } IOReader;
+
+typedef struct {
+	char *base;
+	size_t capacity;
+	char *ptr;
+	size_t len;
+} IOWriter;
 
 /// @brief Initialize an IOReader with a given buffer
 ///
@@ -85,6 +94,10 @@ static inline int io_reader_get_u32(IOReader *rdr, uint32_t *data) {
 	*data = bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3];
 	return err;
 }
+
+void io_writer_init(IOWriter *wr, void *mem, size_t capacity);
+int io_writer_claim(IOWriter *wr, void **mem, size_t len);
+int io_writer_put(IOWriter *wr, const void *mem, size_t len);
 
 #ifdef __cplusplus
 }

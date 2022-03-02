@@ -42,3 +42,40 @@ int io_reader_get(IOReader *rdr, void *dest, size_t len) {
 
 	return err;
 }
+
+void io_writer_init(IOWriter *wr, void *mem, size_t capacity) {
+	wr->base = mem;
+	wr->capacity = capacity;
+	wr->ptr = wr->base;
+	wr->len = 0;
+}
+
+int io_writer_claim(IOWriter *wr, void **mem, size_t len) {
+	if(wr->len + len > wr->capacity) {
+		return IO_BUF_TOO_SMALL;
+	}
+
+	*mem = wr->ptr;
+	int claimed = (int)min(len, wr->capacity - wr->len);
+
+	wr->ptr += claimed;
+	wr->len += claimed;
+
+	return claimed;
+}
+
+int io_writer_put(IOWriter *wr, const void *mem, size_t len) {
+	void *claim;
+	int claimed = io_writer_claim(wr, &claim, len);
+	if(claimed == 0) {
+		return IO_BUF_FULL;
+	} else if(claimed < len) {
+		return IO_BUF_TOO_SMALL;
+	} else if(claimed < 0) {
+		return claimed;
+	}
+
+	memmove(claim, mem, len);
+
+	return claimed;
+}

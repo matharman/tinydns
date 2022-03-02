@@ -31,3 +31,8 @@ add_gtest_bin(
 	EXE io_reader_test
 	SOURCES io_reader_test.cc
 	)
+
+add_gtest_bin(
+	EXE io_writer_test
+	SOURCES io_writer_test.cc
+	)
