@@ -112,7 +112,8 @@ static void print_cname(const struct tiny_dns_name *name) {
 
 static void rr_foreach(struct tiny_dns_iter *iter, const struct tiny_dns_rr *rr,
 		       enum tiny_dns_section section, void *context) {
-	printf("%s: ", section_str(section));
+	printf("section: %s\n", section_str(section));
+	printf("record for name: %s\n", rr->name.name);
 
 	char scratch[INET6_ADDRSTRLEN];
 	switch (rr->atype) {
@@ -126,11 +127,10 @@ static void rr_foreach(struct tiny_dns_iter *iter, const struct tiny_dns_rr *rr,
 		printf("RR AAAA: %s\n", scratch);
 		break;
 	case RR_TYPE_CNAME:
-		print_cname(&rr->rdata.rr_cname);
+		printf("RR CNAME: %s\n", rr->rdata.rr_cname.name);
 		break;
 	case RR_TYPE_TXT:
-		hexdump("RR TXT------", rr->rdata.rr_txt.txt,
-			rr->rdata.rr_txt.len);
+		printf("RR TXT: %s\n", rr->rdata.rr_txt.txt);
 		break;
 	default:
 		printf("RR TYPE 0x%0X: ", rr->atype);
