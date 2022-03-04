@@ -1,3 +1,6 @@
+/// @file tiny_dns.h
+/// @brief Public API header for TinyDNS library
+
 #ifndef TINY_DNS_H
 #define TINY_DNS_H
 
@@ -112,7 +115,18 @@ struct tiny_dns_rr {
     } rdata;
 };
 
-tiny_dns_err tiny_dns_build_query(uint8_t *buffer, size_t *len, uint16_t id, const char *name,
+/// @brief Construct a DNS query in \p buffer
+///
+/// @param buffer Destination buffer for the serialized query.
+/// @param len input: size of \p buffer in bytes, output: length of the query in bytes
+/// @param id ID number to use for the query. Application specific, not used by the protocol.
+/// @param name Hostname to resolve
+/// @param qtype Record type to request, usually A or AAAA.
+///
+/// @return TINY_DNS_ERR_NONE on success
+/// @return TINY_DNS_ERR_INVALID if parameters are NULL
+/// @return TINY_DNS_ERR_NO_BUF if \p buffer is too small for the serialized query
+tiny_dns_err tiny_dns_build_query(void *buffer, size_t *len, uint16_t id, const char *name,
                                   enum tiny_dns_rr_type qtype);
 
 struct tiny_dns_iter {
@@ -124,14 +138,57 @@ struct tiny_dns_iter {
     IOReader buf;
 };
 
+/// @brief Initialize a DNS response iterator over \p data
+///     The provided data is assumed to be a response to a DNS query.
+///     This function will parse the response header and discard the questions section.
+///     In simple use cases, one already knows the question asked, so that section is not useful
+///     when handling the response.
+///     TODO the return values expose io.h errors, instead of mapping them to TINY_DNS_ERR values.
+///
+/// @param iter Pointer to uninitialized iterator
+/// @param data Buffer containing the DNS response
+/// @param len Length of @data in bytes
+///
+/// @return TINY_DNS_ERR_NONE on success
+/// @return <TINY_DNS_ERR_NONE on error. This will be improved in future versions.
 tiny_dns_err tiny_dns_iter_init(struct tiny_dns_iter *iter, void *data, size_t len);
 
+/// @brief Parse the next resource record in wrapped by \p iter
+///     In general, one should use \a tiny_dns_iter_foreach instead of this function to avoid
+///     writing boilerplate. However, it is public for lower level use cases that don't want the
+///     overhead of a callback.
+///
+///     This function will mutate the iterator to track how many records remain in each section. The
+///     iterator object should not be accessed directly for this reason. The buffer wrapped by the
+///     iterator object is not mutated, however.
+///
+/// @param iter Pointer to DNS response iterator object
+/// @param rr Pointer to an empty resource record, where the result of decoding the next record will
+///           be stored.
+/// @param section Output pointer which will be set to the current section.
+///
+/// @return TINY_DNS_ERR_NONE on success
+/// @return TINY_DNS_ERR_NO_BUF when the iterator is exhausted
+/// @return <TINY_DNS_ERR_NONE on error
 tiny_dns_err tiny_dns_iter_yield(struct tiny_dns_iter *iter, struct tiny_dns_rr *rr,
                                  enum tiny_dns_section *section);
 
 typedef void (*tiny_dns_iter_fn)(struct tiny_dns_iter *iter, const struct tiny_dns_rr *rr,
                                  enum tiny_dns_section section, void *context);
 
+/// @brief A convenience wrapper around \a tiny_dns_iter_yield.
+///     This function invokes \p foreach_callback as the body of a for loop as \p iter is exhausted.
+///     Every resource record in the response will be passed to the callback, so the user can handle
+///     each record in any fashion they wish.
+///
+///     See the tiny_dns_cli for usage example.
+///
+/// @param iter Pointer to DNS response iterator object
+/// @param foreach_callback User callback invoked as the "body" of the iteration
+/// @param context User context for the callback.
+///
+/// @return TINY_DNS_ERR_NONE when the iterator is exhausted
+/// @return <TINY_DNS_ERR_NONE on any error
 tiny_dns_err tiny_dns_iter_foreach(struct tiny_dns_iter *iter, tiny_dns_iter_fn foreach_callback,
                                    void *context);
 

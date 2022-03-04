@@ -142,7 +142,7 @@ static tiny_dns_err tiny_dns_encode_question(IOWriter *buf, const char *name, ui
     return TINY_DNS_ERR_NONE;
 }
 
-tiny_dns_err tiny_dns_build_query(uint8_t *buffer, size_t *len, uint16_t id, const char *name,
+tiny_dns_err tiny_dns_build_query(void *buffer, size_t *len, uint16_t id, const char *name,
                                   enum tiny_dns_rr_type qtype) {
     if (!buffer || !len || !name) {
         return TINY_DNS_ERR_INVALID;

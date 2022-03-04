@@ -69,9 +69,7 @@ int io_writer_claim(IOWriter *wr, void **mem, size_t len) {
 int io_writer_put(IOWriter *wr, const void *mem, size_t len) {
     void *claim;
     int claimed = io_writer_claim(wr, &claim, len);
-    if (claimed == 0) {
-        return IO_BUF_FULL;
-    } else if ((size_t)claimed < len) {
+    if ((size_t)claimed < len) {
         return IO_BUF_TOO_SMALL;
     } else if (claimed < 0) {
         return claimed;
@@ -80,4 +78,22 @@ int io_writer_put(IOWriter *wr, const void *mem, size_t len) {
     memmove(claim, mem, len);
 
     return claimed;
+}
+
+int io_writer_put_u16(IOWriter *wr, const uint16_t data) {
+    uint8_t bytes[sizeof(data)] = {
+        (data >> 8) & 0x00FF,
+        data & 0x00FF,
+    };
+    return io_writer_put(wr, bytes, sizeof(bytes));
+}
+
+int io_writer_put_u32(IOWriter *wr, const uint32_t data) {
+    uint8_t bytes[sizeof(data)] = {
+        (data >> 24) & 0x000000FF,
+        (data >> 16) & 0x000000FF,
+        (data >> 8) & 0x000000FF,
+        data & 0x000000FF,
+    };
+    return io_writer_put(wr, bytes, sizeof(bytes));
 }

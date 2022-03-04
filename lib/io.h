@@ -1,3 +1,6 @@
+/// \internal @file io.h
+/// @brief Private buffer management helpers
+
 #ifndef TINY_DNS_IO_H
 #define TINY_DNS_IO_H
 
@@ -9,8 +12,7 @@ extern "C" {
 #endif
 
 enum IOError {
-    IO_BUF_TOO_SMALL = -3,
-    IO_BUF_FULL = -2,
+    IO_BUF_TOO_SMALL = -2,
     IO_BUF_EMPTY = -1,
     IO_SUCCESS = 0,
 };
@@ -97,27 +99,53 @@ static inline int io_reader_get_u32(IOReader *rdr, uint32_t *data) {
     return err;
 }
 
+/// @brief Initialize an IOWriter with a given buffer
+///
+/// @param wr Pointer to uninitialized writer
+/// @param mem Buffer for the writer's pool of memory
+/// @param capacity capacity of @buffer in bytes
 void io_writer_init(IOWriter *wr, void *mem, size_t capacity);
+
+/// @brief Claim a region of @len bytes from the writer
+///     Use this to avoid double copies. Permanently exhausts the claimed bytes, so use it wisely.
+///     If fewers bytes are available than the requested amount, the number of available bytes is
+///     returned.
+///
+/// @param wr Pointer to target writer
+/// @param mem Caller's pointer which will be set to the start address of the claimed bytes
+/// @param len Number of bytes to reserve for raw writing via @mem
+///
+/// @return Number of bytes reserved on success.
+/// @return <0 on error
 int io_writer_claim(IOWriter *wr, void **mem, size_t len);
+
+/// @brief Copy @len bytes of @mem into the writer's buffer.
+///
+/// @param wr Pointer to target writer
+/// @param mem Buffer to copy into the writer
+/// @param len Number of bytes to copy into the writer
+///
+/// @return Number of bytes written on success.
+/// @return IO_BUF_TOO_SMALL if there were fewer than @len bytes available.
 int io_writer_put(IOWriter *wr, const void *mem, size_t len);
 
-static inline int io_writer_put_u16(IOWriter *wr, const uint16_t data) {
-    uint8_t bytes[sizeof(data)] = {
-        (uint8_t)((data >> 8) & 0x00FF),
-        (uint8_t)(data & 0x00FF),
-    };
-    return io_writer_put(wr, bytes, sizeof(bytes));
-}
+/// @brief Copy a 16-bit value into the writer. Always encodes as big endian.
+///
+/// @param wr Pointer to target writer
+/// @param data 16-bit value to write
+///
+/// @return Number of bytes written on success.
+/// @return IO_BUF_TOO_SMALL if there were fewer than @len bytes available.
+int io_writer_put_u16(IOWriter *wr, const uint16_t data);
 
-static inline int io_writer_put_u32(IOWriter *wr, const uint32_t data) {
-    uint8_t bytes[sizeof(data)] = {
-        (uint8_t)((data >> 24) & 0x000000FF),
-        (uint8_t)((data >> 16) & 0x000000FF),
-        (uint8_t)((data >> 8) & 0x000000FF),
-        (uint8_t)(data & 0x000000FF),
-    };
-    return io_writer_put(wr, bytes, sizeof(bytes));
-}
+/// @brief Copy a 32-bit value into the writer. Always encodes as big endian.
+///
+/// @param wr Pointer to target writer
+/// @param data 32-bit value to write
+///
+/// @return Number of bytes written on success.
+/// @return IO_BUF_TOO_SMALL if there were fewer than @len bytes available.
+int io_writer_put_u32(IOWriter *wr, const uint32_t data);
 
 #ifdef __cplusplus
 }
