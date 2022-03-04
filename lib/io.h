@@ -9,23 +9,23 @@ extern "C" {
 #endif
 
 enum IOError {
-	IO_BUF_TOO_SMALL = -3,
-	IO_BUF_FULL = -2,
-	IO_BUF_EMPTY = -1,
-	IO_SUCCESS = 0,
+    IO_BUF_TOO_SMALL = -3,
+    IO_BUF_FULL = -2,
+    IO_BUF_EMPTY = -1,
+    IO_SUCCESS = 0,
 };
 
 typedef struct {
-	const char *base;
-	const char *ptr;
-	size_t remaining;
+    const char *base;
+    const char *ptr;
+    size_t remaining;
 } IOReader;
 
 typedef struct {
-	char *base;
-	size_t capacity;
-	char *ptr;
-	size_t len;
+    char *base;
+    size_t capacity;
+    char *ptr;
+    size_t len;
 } IOWriter;
 
 /// @brief Initialize an IOReader with a given buffer
@@ -39,7 +39,8 @@ void io_reader_init(IOReader *rdr, const void *data, size_t len);
 /// 	This consumes 0 bytes from the reader.
 ///
 /// @param rdr Pointer to the reader in question
-/// @param ptr Caller's pointer which will be set to the address of the reader's current offset
+/// @param ptr Caller's pointer which will be set to the address of the reader's
+/// current offset
 /// @param len Number of bytes to peek for @ptr
 ///
 /// @return Number of bytes available to peek
@@ -50,7 +51,8 @@ int io_reader_peek_raw(IOReader *rdr, const char **ptr, size_t len);
 /// 	This consumes @len bytes from the reader.
 ///
 /// @param rdr Pointer to reader in question
-/// @param ptr Caller's pointer, which will be set to the address of the reader's current offset
+/// @param ptr Caller's pointer, which will be set to the address of the
+/// reader's current offset
 /// @param len Number of bytes to consume for @ptr
 ///
 /// @return Number of bytes consumed on success
@@ -75,10 +77,10 @@ int io_reader_get(IOReader *rdr, void *dest, size_t len);
 /// @return Number of bytes consumed on success
 /// @return <0 on error
 static inline int io_reader_get_u16(IOReader *rdr, uint16_t *data) {
-	uint8_t bytes[sizeof(*data)];
-	int err = io_reader_get(rdr, bytes, sizeof(bytes));
-	*data = bytes[0] << 8 | bytes[1];
-	return err;
+    uint8_t bytes[sizeof(*data)];
+    int err = io_reader_get(rdr, bytes, sizeof(bytes));
+    *data = bytes[0] << 8 | bytes[1];
+    return err;
 }
 
 /// @brief Consume 4 bytes from the reader, interpreting them as a BE uint32_t
@@ -89,15 +91,33 @@ static inline int io_reader_get_u16(IOReader *rdr, uint16_t *data) {
 /// @return Number of bytes consumed on success
 /// @return <0 on error
 static inline int io_reader_get_u32(IOReader *rdr, uint32_t *data) {
-	uint8_t bytes[sizeof(*data)];
-	int err = io_reader_get(rdr, bytes, sizeof(bytes));
-	*data = bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3];
-	return err;
+    uint8_t bytes[sizeof(*data)];
+    int err = io_reader_get(rdr, bytes, sizeof(bytes));
+    *data = bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3];
+    return err;
 }
 
 void io_writer_init(IOWriter *wr, void *mem, size_t capacity);
 int io_writer_claim(IOWriter *wr, void **mem, size_t len);
 int io_writer_put(IOWriter *wr, const void *mem, size_t len);
+
+static inline int io_writer_put_u16(IOWriter *wr, const uint16_t data) {
+    uint8_t bytes[sizeof(data)] = {
+        (data >> 8) & 0xFF,
+        (data)&0xFF,
+    };
+    return io_writer_put(wr, bytes, sizeof(bytes));
+}
+
+static inline int io_writer_put_u32(IOWriter *wr, const uint32_t data) {
+    uint8_t bytes[sizeof(data)] = {
+        (data >> 24) & 0xFF,
+        (data >> 16) & 0xFF,
+        (data >> 8) & 0xFF,
+        (data)&0xFF,
+    };
+    return io_writer_put(wr, bytes, sizeof(bytes));
+}
 
 #ifdef __cplusplus
 }
