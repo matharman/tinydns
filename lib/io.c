@@ -71,7 +71,7 @@ int io_writer_put(IOWriter *wr, const void *mem, size_t len) {
     int claimed = io_writer_claim(wr, &claim, len);
     if (claimed == 0) {
         return IO_BUF_FULL;
-    } else if (claimed < len) {
+    } else if ((size_t)claimed < len) {
         return IO_BUF_TOO_SMALL;
     } else if (claimed < 0) {
         return claimed;

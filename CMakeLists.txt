@@ -7,6 +7,7 @@ add_library(tiny_dns STATIC
 	lib/tiny_dns.c
 	)
 target_include_directories(tiny_dns PUBLIC lib)
+target_compile_options(tiny_dns PRIVATE -Wall -Wpedantic -Wno-enum-compare -Werror -std=c99)
 add_subdirectory(lib/rdata)
 
 add_executable(tiny_dns_cli cli/main.c)

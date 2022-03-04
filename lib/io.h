@@ -103,18 +103,18 @@ int io_writer_put(IOWriter *wr, const void *mem, size_t len);
 
 static inline int io_writer_put_u16(IOWriter *wr, const uint16_t data) {
     uint8_t bytes[sizeof(data)] = {
-        (data >> 8) & 0xFF,
-        (data)&0xFF,
+        (uint8_t)((data >> 8) & 0x00FF),
+        (uint8_t)(data & 0x00FF),
     };
     return io_writer_put(wr, bytes, sizeof(bytes));
 }
 
 static inline int io_writer_put_u32(IOWriter *wr, const uint32_t data) {
     uint8_t bytes[sizeof(data)] = {
-        (data >> 24) & 0xFF,
-        (data >> 16) & 0xFF,
-        (data >> 8) & 0xFF,
-        (data)&0xFF,
+        (uint8_t)((data >> 24) & 0x000000FF),
+        (uint8_t)((data >> 16) & 0x000000FF),
+        (uint8_t)((data >> 8) & 0x000000FF),
+        (uint8_t)(data & 0x000000FF),
     };
     return io_writer_put(wr, bytes, sizeof(bytes));
 }
