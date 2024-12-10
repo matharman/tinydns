@@ -15,6 +15,8 @@ tiny_dns_err tiny_dns_parse_rdata_aaaa(IOReader *buf, struct tiny_dns_rr *rr);
 
 tiny_dns_err tiny_dns_parse_rdata_cname(IOReader *buf, struct tiny_dns_rr *rr);
 
+tiny_dns_err tiny_dns_parse_rdata_srv(IOReader *buf, struct tiny_dns_rr *rr);
+
 tiny_dns_err tiny_dns_parse_rdata_txt(IOReader *buf, struct tiny_dns_rr *rr);
 
 #ifdef __cplusplus

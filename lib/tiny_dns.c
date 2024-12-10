@@ -285,6 +285,9 @@ static tiny_dns_err tiny_dns_parse_rr(struct tiny_dns_rr *rr, IOReader *buf) {
         case RR_TYPE_CNAME:
             err = tiny_dns_parse_rdata_cname(buf, rr);
             break;
+        case RR_TYPE_SRV:
+            err = tiny_dns_parse_rdata_srv(buf, rr);
+            break;
         case RR_TYPE_TXT:
             err = tiny_dns_parse_rdata_txt(buf, rr);
             break;

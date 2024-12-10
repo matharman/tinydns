@@ -32,6 +32,7 @@ enum tiny_dns_rr_type {
     RR_TYPE_CNAME = 5,
     RR_TYPE_TXT = 16,
     RR_TYPE_AAAA = 28,
+    RR_TYPE_SRV = 33,
 };
 
 enum tiny_dns_opcode {
@@ -92,6 +93,13 @@ struct tiny_dns_question {
     uint16_t qclass;
 };
 
+struct tiny_dns_srv {
+    uint16_t priority;
+    uint16_t weight;
+    uint16_t port;
+    struct tiny_dns_name target;
+};
+
 struct tiny_dns_txt {
     const char *txt;
     uint8_t len;
@@ -107,6 +115,7 @@ struct tiny_dns_rr {
         uint8_t rr_a[4];
         uint8_t rr_aaaa[16];
         struct tiny_dns_name rr_cname;
+        struct tiny_dns_srv rr_srv;
         struct tiny_dns_txt rr_txt;
         struct {
             const char *data;

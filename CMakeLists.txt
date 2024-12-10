@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 project(tiny_dns C CXX)
 
-add_library(tiny_dns STATIC 
-	lib/io.c
-	lib/label.c
-	lib/tiny_dns.c
-	)
+add_library(tiny_dns STATIC
+ lib/io.c
+ lib/label.c
+ lib/tiny_dns.c
+ )
 target_include_directories(tiny_dns PUBLIC lib)
 target_compile_options(tiny_dns PRIVATE -Wall -Wpedantic -Wno-enum-compare -Werror -std=c99)
 add_subdirectory(lib/rdata)
