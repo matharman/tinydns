@@ -9,6 +9,7 @@ PRs are welcome for more record types.
 - A
 - AAAA
 - CNAME
+- SRV
 - TXT
 
 ## Goals
